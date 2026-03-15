@@ -1,5 +1,5 @@
 const STORAGE_KEY = "beeepro-sprint-timeline-v3";
-const STATE_API = "api/state.php";
+const STATE_API = "state.php";
 let saveToServerTimeout = null;
 
 const laneConfig = [

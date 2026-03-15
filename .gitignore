@@ -11,4 +11,4 @@ Thumbs.db
 # .vscode/
 
 # Server-persisted cards state (stored on server only)
-api/cards.json
+cards.json
