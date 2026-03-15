@@ -399,12 +399,7 @@ function renderBoard() {
 
       const cards = getCardsForLocation({ type: "week", lane: lane.id, weekId: week.id });
 
-      if (cards.length === 0) {
-        const empty = document.createElement("span");
-        empty.className = "dropzone-empty";
-        empty.textContent = "Перетащите этап";
-        stack.appendChild(empty);
-      } else {
+      if (cards.length > 0) {
         cards.forEach((card) => stack.appendChild(createCard(card)));
       }
 
