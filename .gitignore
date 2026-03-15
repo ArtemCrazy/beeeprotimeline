@@ -1,0 +1,11 @@
+# Local / IDE
+.vscode/
+.idea/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Sensitive (SFTP has password)
+# .vscode/

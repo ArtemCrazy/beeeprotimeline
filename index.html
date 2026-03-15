@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BeeePro Timeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-frame">
+    <div class="site-shell">
+      <main class="page-content">
+        <section class="hero">
+          <h1>BeeePro Timeline</h1>
+        </section>
+
+        <section class="board-panel">
+          <div class="panel-head board-head">
+            <div>
+              <p class="eyebrow">Календарь</p>
+              <h2>Спринты по неделям</h2>
+            </div>
+            <p class="panel-note">Календарь начинается слева и прокручивается только вправо по мере роста плана.</p>
+          </div>
+          <div class="board-scroll">
+            <div class="timeline-board" id="timelineBoard"></div>
+          </div>
+        </section>
+
+        <section class="pool-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Пул этапов</p>
+              <h2>Карточки для планирования</h2>
+              <p class="panel-note">В одном спринте может лежать несколько карточек. Раскладка по неделям сохраняется автоматически.</p>
+            </div>
+            <button class="ghost-button" type="button" id="addCardBtn">Добавить карточку</button>
+          </div>
+          <div class="pool-grid" id="poolGrid"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <template id="cardTemplate">
+    <button class="task-card" type="button" draggable="true"></button>
+  </template>
+
+  <script src="./script.js"></script>
+</body>
+</html>
