@@ -340,8 +340,9 @@ function getCurrentSprintIndex() {
     start.setHours(0, 0, 0, 0);
     end.setHours(23, 59, 59, 999);
     if (today >= start && today <= end) return i;
+    if (today < start) return i; // выходные или до спринта — подсвечиваем ближайший следующий
   }
-  return -1;
+  return weekColumns.length - 1;
 }
 
 function renderBoard() {
