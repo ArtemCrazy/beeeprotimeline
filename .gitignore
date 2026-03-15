@@ -9,3 +9,6 @@ Thumbs.db
 
 # Sensitive (SFTP has password)
 # .vscode/
+
+# Server-persisted cards state (stored on server only)
+api/cards.json

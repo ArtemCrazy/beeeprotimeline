@@ -1,4 +1,6 @@
 const STORAGE_KEY = "beeepro-sprint-timeline-v3";
+const STATE_API = "api/state.php";
+let saveToServerTimeout = null;
 
 const laneConfig = [
   {
@@ -176,6 +178,14 @@ const addCardBtn = document.getElementById("addCardBtn");
 
 render();
 bindEvents();
+
+loadStateFromServer().then((serverState) => {
+  if (serverState && serverState.cards && serverState.cards.length > 0) {
+    state = serverState;
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    render();
+  }
+});
 
 function bindEvents() {
   const boardScroll = document.querySelector(".board-scroll");
@@ -521,34 +531,30 @@ function createInitialState() {
   };
 }
 
+function normalizeLoadedCards(parsed) {
+  if (!parsed || !Array.isArray(parsed.cards)) return null;
+  return {
+    cards: parsed.cards.map((card) => ({
+      id: card.id,
+      lane: card.lane,
+      title: card.title,
+      category: card.category ?? getCategoryForTitle(card.title),
+      location: {
+        type: card.location?.type ?? "pool",
+        lane: card.location?.lane ?? card.lane,
+        weekId: card.location?.weekId ?? null,
+      },
+    })),
+  };
+}
+
 function loadState() {
   const saved = window.localStorage.getItem(STORAGE_KEY);
-
-  if (!saved) {
-    return createInitialState();
-  }
-
+  if (!saved) return createInitialState();
   try {
     const parsed = JSON.parse(saved);
-
-    if (!parsed || !Array.isArray(parsed.cards)) {
-      return createInitialState();
-    }
-
-    // Сохраняем раскладку как есть; дополняем category для группировки
-    return {
-      cards: parsed.cards.map((card) => ({
-        id: card.id,
-        lane: card.lane,
-        title: card.title,
-        category: card.category ?? getCategoryForTitle(card.title),
-        location: {
-          type: card.location?.type ?? "pool",
-          lane: card.location?.lane ?? card.lane,
-          weekId: card.location?.weekId ?? null,
-        },
-      })),
-    };
+    const normalized = normalizeLoadedCards(parsed);
+    return normalized || createInitialState();
   } catch {
     return createInitialState();
   }
@@ -556,6 +562,24 @@ function loadState() {
 
 function persistState() {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if (saveToServerTimeout) clearTimeout(saveToServerTimeout);
+  saveToServerTimeout = setTimeout(saveStateToServer, 800);
+}
+
+function saveStateToServer() {
+  saveToServerTimeout = null;
+  fetch(STATE_API, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(state),
+  }).catch(() => {});
+}
+
+function loadStateFromServer() {
+  return fetch(STATE_API)
+    .then((r) => (r.ok ? r.json() : null))
+    .then((parsed) => normalizeLoadedCards(parsed))
+    .catch(() => null);
 }
 
 // Пятидневка: спринт = понедельник–пятница (5 дней). Следующий спринт — в следующий понедельник (+7 дней).
