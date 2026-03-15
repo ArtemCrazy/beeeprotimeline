@@ -336,6 +336,12 @@ body.board-scroll-dragging .week-cell {
   color: #1a2239;
 }
 
+.week-cell.current-sprint {
+  background: linear-gradient(180deg, #b8e6c4 0%, #7be3a1 100%);
+  color: #0d3018;
+  box-shadow: inset 0 0 0 2px rgba(123, 227, 161, 0.5);
+}
+
 .week-date {
   display: block;
   font-size: 18px;
@@ -391,6 +397,11 @@ body.board-scroll-dragging .week-cell {
 
 .dropzone[data-lane="integration"] {
   background-color: rgba(111, 181, 255, 0.05);
+}
+
+.dropzone.current-sprint {
+  background-color: rgba(123, 227, 161, 0.18) !important;
+  box-shadow: inset 0 0 0 2px rgba(123, 227, 161, 0.4);
 }
 
 .task-stack {

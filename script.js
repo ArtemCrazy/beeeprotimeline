@@ -331,9 +331,23 @@ function renderPool() {
   });
 }
 
+function getCurrentSprintIndex() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  for (let i = 0; i < weekColumns.length; i++) {
+    const start = new Date(weekColumns[i].start);
+    const end = new Date(weekColumns[i].end);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+    if (today >= start && today <= end) return i;
+  }
+  return -1;
+}
+
 function renderBoard() {
   timelineBoard.innerHTML = "";
   timelineBoard.style.setProperty("--week-count", String(weekColumns.length));
+  const currentSprintIndex = getCurrentSprintIndex();
 
   const corner = document.createElement("div");
   corner.className = "corner-cell";
@@ -361,7 +375,7 @@ function renderBoard() {
 
   weekColumns.forEach((week, index) => {
     const weekCell = document.createElement("div");
-    weekCell.className = "week-cell";
+    weekCell.className = "week-cell" + (index === currentSprintIndex ? " current-sprint" : "");
     weekCell.style.gridColumn = `${index + 2} / ${index + 3}`;
     weekCell.style.gridRow = "2 / 3";
     weekCell.innerHTML = `
@@ -386,7 +400,7 @@ function renderBoard() {
 
     weekColumns.forEach((week, weekIndex) => {
       const zone = document.createElement("div");
-      zone.className = "dropzone";
+      zone.className = "dropzone" + (weekIndex === currentSprintIndex ? " current-sprint" : "");
       zone.dataset.dropzone = "true";
       zone.dataset.type = "week";
       zone.dataset.lane = lane.id;
