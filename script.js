@@ -18,6 +18,27 @@ const laneConfig = [
   },
 ];
 
+// Категории для группировки карточек по блокам (как в Figma / UI-map)
+const categoryRanges = [
+  ["Главная", 0, 2],
+  ["Каталог", 2, 9],
+  ["Карточка товара", 9, 14],
+  ["Поиск", 14, 17],
+  ["Пополнение / Выдача", 17, 22],
+  ["Корзина и чекаут", 22, 28],
+  ["Чаты", 28, 33],
+  ["Уведомления и поддержка", 33, 37],
+  ["Кошелёк", 37, 42],
+  ["Профиль", 42, 48],
+  ["Авторизация", 48, 53],
+  ["Дашборд и магазин", 53, 57],
+  ["Товары и продажи", 57, 62],
+  ["Команда", 62, 64],
+  ["Отзывы", 64, 65],
+  ["Служебная", 65, 67],
+  ["Инфо-страницы", 67, 72],
+];
+
 // Одинаковый набор этапов для всех трёх дорожек (Дизайн, Верстка, Интеграция)
 const cardTitles = [
   "Главная (логин не нужен)",
@@ -95,10 +116,17 @@ const cardTitles = [
   "Инструкция по Steam",
 ];
 
+function getCategoryForTitle(title) {
+  const i = cardTitles.indexOf(title);
+  if (i === -1) return "Прочее";
+  const cat = categoryRanges.find(([, start, end]) => i >= start && i < end);
+  return cat ? cat[0] : "Прочее";
+}
+
 const defaultCards = [
-  ...cardTitles.map((title, i) => ({ id: `design-${i}`, lane: "design", title })),
-  ...cardTitles.map((title, i) => ({ id: `layout-${i}`, lane: "layout", title })),
-  ...cardTitles.map((title, i) => ({ id: "integration-" + i, lane: "integration", title })),
+  ...cardTitles.map((title, i) => ({ id: `design-${i}`, lane: "design", title, category: getCategoryForTitle(title) })),
+  ...cardTitles.map((title, i) => ({ id: `layout-${i}`, lane: "layout", title, category: getCategoryForTitle(title) })),
+  ...cardTitles.map((title, i) => ({ id: "integration-" + i, lane: "integration", title, category: getCategoryForTitle(title) })),
 ];
 
 const monthNames = [
@@ -278,6 +306,7 @@ function bindEvents() {
         id: `card-${ts}-${lane}`,
         lane,
         title: title.trim(),
+        category: "Прочее",
         location: { type: "pool", lane, weekId: null },
       });
     });
@@ -309,24 +338,45 @@ function renderPool() {
       </div>
     `;
 
-    const stack = document.createElement("div");
-    stack.className = "task-stack";
-    stack.dataset.dropzone = "true";
-    stack.dataset.type = "pool";
-    stack.dataset.lane = lane.id;
+    const dropzone = document.createElement("div");
+    dropzone.className = "pool-dropzone";
+    dropzone.dataset.dropzone = "true";
+    dropzone.dataset.type = "pool";
+    dropzone.dataset.lane = lane.id;
 
     const cards = getCardsForLocation({ type: "pool", lane: lane.id, weekId: null });
+    const byCategory = {};
+    cards.forEach((card) => {
+      const cat = card.category || "Прочее";
+      if (!byCategory[cat]) byCategory[cat] = [];
+      byCategory[cat].push(card);
+    });
+
+    const categoryOrder = categoryRanges.map(([name]) => name).concat("Прочее");
+    categoryOrder.forEach((catName) => {
+      const list = byCategory[catName];
+      if (!list || list.length === 0) return;
+
+      const section = document.createElement("div");
+      section.className = "pool-category";
+      const titleEl = document.createElement("div");
+      titleEl.className = "pool-category__title";
+      titleEl.textContent = catName;
+      const stack = document.createElement("div");
+      stack.className = "task-stack";
+      list.forEach((card) => stack.appendChild(createCard(card)));
+      section.append(titleEl, stack);
+      dropzone.appendChild(section);
+    });
 
     if (cards.length === 0) {
       const empty = document.createElement("div");
       empty.className = "dropzone-empty";
       empty.textContent = "Этапы этой дорожки уже распределены";
-      stack.appendChild(empty);
-    } else {
-      cards.forEach((card) => stack.appendChild(createCard(card)));
+      dropzone.appendChild(empty);
     }
 
-    column.append(head, stack);
+    column.append(head, dropzone);
     poolGrid.appendChild(column);
   });
 }
@@ -470,12 +520,13 @@ function loadState() {
       return createInitialState();
     }
 
-    // Сохраняем раскладку как есть: карточки в пуле и в спринтах по неделям не сбрасываются
+    // Сохраняем раскладку как есть; дополняем category для группировки
     return {
       cards: parsed.cards.map((card) => ({
         id: card.id,
         lane: card.lane,
         title: card.title,
+        category: card.category ?? getCategoryForTitle(card.title),
         location: {
           type: card.location?.type ?? "pool",
           lane: card.location?.lane ?? card.lane,
