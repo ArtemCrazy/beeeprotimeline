@@ -319,6 +319,21 @@ function bindEvents() {
 function render() {
   renderPool();
   renderBoard();
+  scrollTimelineToCurrentSprint();
+}
+
+function scrollTimelineToCurrentSprint() {
+  requestAnimationFrame(() => {
+    const boardScroll = document.querySelector(".board-scroll");
+    if (!boardScroll || !timelineBoard) return;
+    const idx = getCurrentSprintIndex();
+    if (idx < 0) return;
+    const style = getComputedStyle(timelineBoard);
+    const labelWidth = parseFloat(style.getPropertyValue("--label-width")) || 176;
+    const weekWidth = parseFloat(style.getPropertyValue("--week-width")) || 267;
+    const scrollLeft = labelWidth + idx * weekWidth - boardScroll.clientWidth / 2 + weekWidth / 2;
+    boardScroll.scrollLeft = Math.max(0, scrollLeft);
+  });
 }
 
 function renderPool() {
